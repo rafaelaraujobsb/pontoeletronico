@@ -1,0 +1,90 @@
+    {% extends 'head.html' %} <!-- Fazendo referência onde está o head da página -->
+    {% block page_content %} <!-- Inicio alteração -->
+    <!-- Custom styles for this template -->
+    <link href="{{ url_for('static',filename='css/formvalidation.css')}}" rel="stylesheet">
+    <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/all.js" integrity="sha384-SlE991lGASHoBfWbelyBPLsUlwY1GwNDJo3jSJO04KZ33K2bwfV9YBauFfnzvynJ" crossorigin="anonymous"></script>
+  </head>
+
+  <body class="bg-light">
+
+    <div class="container">
+      <div class="py-5 text-center">
+        <h2>Cadastrar Funcionário</h2>
+        <a href="{{ url_for('home') }}" title="Fechar"><spam><i class="far fa-times-circle  fa-2x" style="color:#ff4d4d;position:absolute;left:80%"></i></spam></a>
+      </div>
+
+      {% if error %}
+      {% for e in error.split("<br>") %} 
+      <div role="alert">
+        <p class="text-danger">{{ e }}</p>
+      </div>
+      {% endfor %}
+      {% endif %}
+
+      <div class="row">
+        <div class="col order-md-1">
+          <form action="{{ url_for('cad_func') }}" method="POST">
+            <!-- Matricula e Nome Completo -->
+            <div class="row">
+              <div class="col-md-2 mb-3">
+                <label for="user">Matrícula</label>
+                <input type="text" class="form-control" id="matricula" placeholder="{{ matricula }}" disabled>
+              </div>
+
+              <div class="col-md-8 mb-3">
+                <label for="nomeFunc">Nome Completo <spam style="color:#ff4d4d">*</spam></label>
+                <div class="input-group-prepend">
+                  <span class="input-group-text"><i class="fas fa-user"></i></span>
+                  <input type="text" class="form-control" id="nomeFunc" name="nomeFunc" value="{{ nome }}">
+                </div>
+              </div>
+            </div>
+            <!-- FIM Matricula e Nome Completo -->
+
+            <!-- Usuário e Senha -->
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label for="user">Usuário <spam style="color:#ff4d4d;">*</spam></label>
+                <div class="input-group-prepend">
+                  <span class="input-group-text"><i class="far fa-id-card"></i></span>
+                  <input type="text" class="form-control" id="user" name="user" value="{{ user }}">
+                </div>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label for="pass">Senha <spam style="color:#ff4d4d;">*</spam></label>
+                <input type="password" class="form-control" id="pass" name="pass" value="{{ password }}">
+              </div>
+            </div>
+            <!-- FIM Usuário e Senha -->
+
+            <!-- Carga Horária e PIN -->
+            <div class="row">
+              <div class="col-md-3 mb-3">
+                <label for="cargahr">Carga Horária <spam style="color:#ff4d4d;">*</spam></label>
+                <input type="text" class="form-control" id="cargahr" name="cargahr" value="{{ cargahr }}">
+              </div>
+              
+              <div class="col-md-2 mb-3">
+                <label for="pin">PIN</label>
+                <div class="input-group-prepend">
+                  <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                  <input type="text" class="form-control" id="pin" name="pin" value="{{ pin }}" readonly>
+                </div>
+              </div>
+            </div>
+            <!-- FIM Carga Horária e PIN -->
+
+            <div class="mb-4 text-center">
+              <hr>
+              <button class="btn btn-primary btn-lg" type="submit">Cadastrar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <footer class="my-5 pt-5 text-muted text-center text-small">
+        <p class="mb-1">&copy; 2018</p>
+      </footer>
+    </div>
+  </body>
+  {% endblock %} <!-- Fim alteração -->

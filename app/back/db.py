@@ -67,5 +67,60 @@ class BancoDeDados():
 
 		return None
 
+	def lastRegister(self, conn):
+		sql = "SELECT max(matricula) FROM funcionario"
+
+		try:
+			cur = conn.cursor()
+			cur.execute(sql)
+			res = cur.fetchone()
+		except:
+			return '<h1>Error de execução<h1>'
+
+		if res == None:
+			return 0
+		else:
+			return res[0]
+
+	def dmlIUD(self, conn, sql, vls):
+		'''
+			Metódo para ser usado comandos DML(Insert, Update e Delete)
+
+			Args:
+				conn: conexão com o banco de dados
+				sql: comando para ser executado
+				vls: lista com todos os valores
+		'''
+		try:
+			cur = conn.cursor()
+			cur.execute(sql, vls)
+			cur.close()
+			conn.commit()
+		except:
+			return 'Erro na operação!'
+
+		return 0
+
+	def dmlS(self, conn, sql, vls=None):
+		'''
+			Metódo para ser usado com SELECT
+
+			Args:
+				conn: conexão com o banco de dados
+				sql: comando para ser executado
+		'''
+		try:
+			cur = conn.cursor()
+			if vls != None:
+				cur.execute(sql, vls)
+			else:
+				cur.execute(sql)
+			res = cur.fetchall()
+		except:
+			return 1
+
+		return res
+
+
 	def conclose(self, conn):
 		conn.close()

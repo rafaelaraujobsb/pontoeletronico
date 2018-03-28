@@ -1,0 +1,90 @@
+    {% extends 'head.html' %} <!-- Fazendo referência onde está o head da página -->
+    {% block page_content %} <!-- Inicio alteração -->
+    <!-- Custom styles for this template -->
+    <link href="{{ url_for('static',filename='css/formvalidation.css')}}" rel="stylesheet">
+    <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/all.js" integrity="sha384-SlE991lGASHoBfWbelyBPLsUlwY1GwNDJo3jSJO04KZ33K2bwfV9YBauFfnzvynJ" crossorigin="anonymous"></script>
+  </head>
+
+  <body class="bg-light" onload="getLocation()">
+
+    <div class="container">
+      <div class="py-5 text-center">
+        <h2>Leitura do QR CODE:</h2>
+        <a href="{{ url_for('index') }}" title="Fechar"><spam><i class="far fa-times-circle  fa-2x" style="color:#ff4d4d;position:absolute;left:80%"></i></spam></a>
+      </div>
+
+      {% if error %}
+      {% for e in error.split("<br>") %} 
+      <div role="alert">
+        <p class="text-danger">{{ e }}</p>
+      </div>
+      {% endfor %}
+      {% endif %}
+
+      <!--<div class="input-group mb-3">
+        <div class="custom-file">
+          <input type="file" class="custom-file-input" id="inputGroupFile02">
+          <label class="custom-file-label" for="inputGroupFile02">escolha o arquivo</label>
+        </div>
+        <div class="input-group-append">
+          <span class="input-group-text" id="">Upload</span>
+        </div>
+      </div>-->
+
+      <!--<form enctype="multipart/form-data" action="http://localhost:8080/registrar_ponto" method="POST">
+        <input type="hidden" name="MAX_FILE_SIZE" value="1048576" />
+        <!-- The "name" of the input field has to be "file" as it is the name of the POST parameter 
+          Escolha o arquivo: <input name="file" type="file" />
+        <input type="submit" value="Leitor QR CODE" />
+      </form>-->
+
+      <!-- Matricula e PIN -->
+        <form action="{{ url_for('ponto') }}" method="POST">
+
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label for="matricula">Matrícula <spam style="color:#ff4d4d;">*</spam></label>
+              <div class="input-group-prepend">
+                <span class="input-group-text"><i class="far fa-id-card"></i></span>
+                <input type="text" class="form-control" id="mtrc" name="matricula">
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label for="pass">PIN <spam style="color:#ff4d4d;">*</spam></label>
+              <input type="password" class="form-control" id="p" name="pin">
+            </div>
+          </div>
+
+          <div class="mb-4 text-center">
+            <hr>
+            <button class="btn btn-info btn-lg" type="submit">Enviar</button>
+          </div>
+
+          <!-- Localização -->
+          <input type="text" class="form-control" id="latitude" name="latitude" >
+          <input type="text" class="form-control" id="longitude" name="longitude" >
+        </form>
+
+      <!-- FIM Matricula e PIN -->
+      </div>
+    <footer class="my-5 pt-5 text-muted text-center text-small">
+      <p class="mb-1">&copy; 2018</p>
+    </footer>
+
+
+    <script>
+    function getLocation()
+      {
+      if (navigator.geolocation)
+        {
+        navigator.geolocation.getCurrentPosition(showPosition);
+        }
+      }
+    function showPosition(position)
+      {
+        document.getElementById("latitude").value = position.coords.latitude;
+        document.getElementById("longitude").value = position.coords.longitude; 
+      }
+    </script>
+  </body>
+  {% endblock %} <!-- Fim alteração -->
