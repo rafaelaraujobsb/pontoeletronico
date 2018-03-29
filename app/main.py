@@ -5,7 +5,7 @@ from back.login import TelaLogin
 from back.db import BancoDeDados
 from back.vrf import Verificacao
 from flask import Flask, render_template, request, redirect, url_for, session
-from back.alone import * # ARRUMAR UM LOCAL PARA ESSA COISINHA AQUI!!!!!!!!!!!
+from back.alone import * # biblioteca com funções diversas
 
 app = Flask(__name__)
 app.secret_key = 'b9bac6755292f37ae16b82c7b1337987cb3a4b0ebb24b2fc9ea9893f9a61dbfa' #key para session 
@@ -29,7 +29,7 @@ def login():
 			if error: #verificar se os campos foram preenchidos
 				return render_template("index.html", error=error)
 			else: #verificando usuário e senha
-				pwd = cryptmd5(pwd) #LEMBRAR DE ALTERAR AQUI QUANDO ACHAR UM LUGAR PARA ALONE!!!!!
+				pwd = cryptmd5(pwd)
 				db = BancoDeDados()
 				conn = db.connect()
 				error = db.vrfUser(conn, usr, pwd)
@@ -46,15 +46,40 @@ def login():
 	else:
 		return redirect(url_for('index'))
 
-
 """
  Parte onde só usuário com login tem acesso
 """
 @app.route('/home')
 def home():
-	return "<h1>"+ session['username'] +"</h1>"
+	if 'username' in session:
+		db = BancoDeDados()
 
+		sql = "SELECT*FROM viewreg"
 
+		conn = db.connect()
+		res = db.dmlS(conn, sql)
+		db.conclose(conn)
+
+		return render_template('home.html', lista=res)
+	
+	return render_template('index.html', error="Login não foi realizado!")
+
+'''@app.route('/pesquisa', methods=['GET'])
+def pesq_func():
+	if 'username' in session:
+		mtrc = request.form['matric'] # pegando o valor de pesquisa
+
+		if mtrc == "":
+			redirect(url_for('home'))
+
+		db = BancoDeDados()
+
+		sql="SELECT data, matricula, loc, to_char(hora, 'HH24:MI'), cod_tipo FROM ponto WHERE matricula =%s"
+
+		conn = db.connect()
+		res = db.dmlS(conn, sql, mtrc)
+		db.conclose(conn)
+	return render_template('home.html', lista=res)'''
 
 @app.route('/cad_funcionario', methods=['GET', 'POST'])
 def cad_func():
@@ -163,7 +188,10 @@ def ponto():
 		if res == []:
 			return render_template('btponto.html', error='Pin ou matricula incorreto!', latitude=lat,longitude=lon) 
 
-		endc = apiLoc(lat, lon)
+		if lat != "" and lon != "":
+			endc = apiLoc(lat, lon)
+		else:
+			endc="Não foi possível acessar localização!"
 			
 		return redirect(url_for('info_ponto', matricula=mtrc, nome=res[0][0], endereco=endc), code=307)
 	else:
@@ -184,24 +212,29 @@ def info_ponto():
 		#verificar os tipos de pontos que a pessoa pode bater
 		data = date()
 
-		sql = "SELECT ponto.cod_tipo, tipo.nome FROM ponto, tipo WHERE matricula=%s and tipo.cod_tipo = ponto.cod_tipo and data=%s"
+		sql = "SELECT ponto.cod_tipo FROM ponto WHERE matricula=%s and data=%s"
 
 		conn = db.connect()
 		res = db.dmlS(conn, sql, [int(mtrc), data])
 		db.conclose(conn)
 
-		if res == []:
-			sql = "SELECT*FROM tipo"
+		tipos = {1:'Entrada', 2:'Saída Almoço', 3:'Volta Almoço', 4:'Saída'}
+			
+		if res != []:
+			for r in res:
+				if r[0] == 1:
+					del tipos[1]
+				elif r[0] == 2:
+					del tipos[2]
+				elif r[0] == 3:
+					del tipos[3]
+				elif r[0] == 4:
+					del tipos[4]
 
-			conn = db.connect()
-			res = db.dmlS(conn, sql, [int(mtrc), data])
-			db.conclose(conn)
-
-		for r in tipos:
-			if r in res:
+		if tipos == {}:
+			return render_template('index.html', tipo=1)
 				
-
-		return render_template('infoponto.html', matricula=mtrc, nome=nome, tipo=res, endereco=edc) 
+		return render_template('infoponto.html', matricula=mtrc, nome=nome, tipo=tipos, endereco=edc) 
 	else:
 		return redirect(url_for('index'))
 
@@ -222,10 +255,16 @@ def reg_ponto():
 	db.conclose(conn)
 
 	if res:
-		return "<h1>LOST</h1>"
+		return render_template('index.html', error="Falha ao registrar ponto!") # retornando o usuário para login e informando o erro do ponto
 
 
-	return redirect(url_for('index'))
+	return render_template('index.html', success=1) # avisando que o ponto foi registrado
+
+@app.route('/logout')
+def logout():
+	# remover a sessão do usuário
+   session.pop('username', None)
+   return redirect(url_for('index'))
 
 if __name__ == '__main__':
 	app.run(debug=True, port=8080) #rodar o servidor no modo debug na porta 8080

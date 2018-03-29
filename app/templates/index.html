@@ -13,7 +13,19 @@
 
       {% if error %} 
       <div role="alert">
-        <p class="text-danger">{{ error }}</p>
+        <p class="alert-danger">{{ error }}</p>
+      </div>
+      {% endif %}
+
+      {% if tipo %} 
+      <div role="alert">
+        <p class="alert-danger">Você não pode mais bater ponto hoje!</p>
+      </div>
+      {% endif %}
+
+      {% if success %} 
+      <div role="alert">
+        <p class="alert-success">Ponto registrado!</p>
       </div>
       {% endif %}
       

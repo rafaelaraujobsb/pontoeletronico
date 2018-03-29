@@ -45,8 +45,8 @@
     		       <label for="tipo">Opção <spam style="color:#ff4d4d;">*</spam></label>
 
     			    <select class="custom-select" name="tipo" id="tipo">
-    			    	{% for t in tipo %}
-    			    	<option value="{{t[0]}}">{{t[1]}}</option>
+    			    	{% for k,v in tipo.items() %}
+    			    	<option value="{{k}}">{{v}}</option>
     			    	{% endfor %}
     			    </select>
     		    </div>

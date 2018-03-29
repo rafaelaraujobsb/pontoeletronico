@@ -1,0 +1,1 @@
+conn = psycopg2.connect(host='localhost', dbname='ptoeletr', user='postgres', password='postgres')
