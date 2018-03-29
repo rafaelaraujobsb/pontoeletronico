@@ -40,7 +40,11 @@ def login():
 
 			#Usuário encontrado e validado
 			session['username'] = usr
-			return redirect(url_for('home')) #encaminha para a home
+
+			if usr == 'admin':
+				return redirect(url_for('home')) #encaminha para a home
+			else:
+				return redirect(url_for('homefunc'))
 		else:
 			return redirect(url_for('ponto')) #encaminha para ponto 
 	else:
@@ -49,6 +53,29 @@ def login():
 """
  Parte onde só usuário com login tem acesso
 """
+@app.route('/home_func')
+def homefunc():
+	if 'username' in session:
+		db = BancoDeDados()
+
+		sql = "SELECT matricula FROM funcionario WHERE usuario='"+session['username']+"'"
+
+		conn = db.connect()
+		cod = db.dmlS(conn, sql, session['username'])
+
+		sql = "SELECT to_char(ponto.data, 'DD Mon YYYY'), to_char(ponto.hora, 'HH24:MI'), loc FROM ponto WHERE matricula =%s" #carregas os registros
+		res = db.dmlS(conn, sql, [cod[0][0]])
+
+		print(res)
+
+		db.conclose(conn)
+		if res == []:
+			return render_template('homefunc.html', noreg='Sem registros!')
+
+		return render_template('homefunc.html', lista=res)
+	
+	return render_template('index.html', error="Login não foi realizado!")
+
 @app.route('/home')
 def home():
 	if 'username' in session:
@@ -57,8 +84,12 @@ def home():
 		sql = "SELECT*FROM viewreg"
 
 		conn = db.connect()
+		graph(conn)
 		res = db.dmlS(conn, sql)
 		db.conclose(conn)
+
+		if res == []:
+			return render_template('home.html', noreg='Sem registros!')
 
 		return render_template('home.html', lista=res)
 	
@@ -83,77 +114,81 @@ def pesq_func():
 
 @app.route('/cad_funcionario', methods=['GET', 'POST'])
 def cad_func():
-	mtrc = gerarmtrc() #informar a matrícula do próximo funcionário
+	if 'username' in session:
+		mtrc = gerarmtrc() #informar a matrícula do próximo funcionário
 
-	if request.method == 'POST': #indica que se quer cadastrar um usuário no banco de dados
-		#reuperar dados
-		nomeFunc = request.form['nomeFunc']
-		usr = request.form['user']
-		pwd = request.form['pass']
-		ch = request.form['cargahr'] # carga horária
-		p = request.form['pin'] # pin
-		
-		# verificando os dados digitados
-		error = vrf.nullSpace('Preencha os campos marcados com *', nome=nomeFunc, user=usr, password=pwd, \
-			cargahr=ch, pin=p)
-
-		if error:
-			return render_template('cad_func.html', error=error, matricula=mtrc, nome=nomeFunc, user=usr, \
-			cargahr=ch, pin=p) # retorna para a página de login com os dados informados
-		else:
-			error = vrf.validateData(nome=nomeFunc, user=usr, cargahr=ch) #validando os tipo dos dados
+		if request.method == 'POST': #indica que se quer cadastrar um usuário no banco de dados
+			#reuperar dados
+			nomeFunc = request.form['nomeFunc']
+			usr = request.form['user']
+			pwd = request.form['pass']
+			ch = request.form['cargahr'] # carga horária
+			p = request.form['pin'] # pin
+			
+			# verificando os dados digitados
+			error = vrf.nullSpace('Preencha os campos marcados com *', nome=nomeFunc, user=usr, password=pwd, \
+				cargahr=ch, pin=p)
 
 			if error:
+				return render_template('cad_func.html', error=error, matricula=mtrc, nome=nomeFunc, user=usr, \
+				cargahr=ch, pin=p) # retorna para a página de login com os dados informados
+			else:
+				error = vrf.validateData(nome=nomeFunc, user=usr, cargahr=ch) #validando os tipo dos dados
+
+				if error:
+					return render_template("cad_func.html", error=error, matricula=mtrc,nome=nomeFunc, user=usr, \
+				cargahr=ch, pin=p) # retorna para a página de login com os dados informados
+
+			pwd = cryptmd5(pwd) #criptografando a senha
+
+			#cadastrando o funcionario no banco de dados
+			db = BancoDeDados()
+
+			sql = "INSERT INTO funcionario(nome, usuario, senha, pin, carga_horaria, cod_acesso) VALUES (%s, %s, %s, %s, %s, 2)"
+
+			v = [nomeFunc, usr, pwd, int(p), int(ch)] #lista com os valores
+
+			conn = db.connect()
+			error = db.dmlIUD(conn, sql, v)
+			db.conclose(conn)
+
+			if error: #verificar se aconteceu algum erro
 				return render_template("cad_func.html", error=error, matricula=mtrc,nome=nomeFunc, user=usr, \
-			cargahr=ch, pin=p) # retorna para a página de login com os dados informados
-
-		pwd = cryptmd5(pwd) #criptografando a senha
-
-		#cadastrando o funcionario no banco de dados
-		db = BancoDeDados()
-
-		sql = "INSERT INTO funcionario(nome, usuario, senha, pin, carga_horaria, cod_acesso) VALUES (%s, %s, %s, %s, %s, 2)"
-
-		v = [nomeFunc, usr, pwd, int(p), int(ch)] #lista com os valores
-
-		conn = db.connect()
-		error = db.dmlIUD(conn, sql, v)
-		db.conclose(conn)
-
-		if error: #verificar se aconteceu algum erro
-			return render_template("cad_func.html", error=error, matricula=mtrc,nome=nomeFunc, user=usr, \
-			cargahr=ch, pin=p)
+				cargahr=ch, pin=p)
 
 
-		return redirect(url_for('qrcode_func'), code=307) #redirecionando com o POST
-		
-	else:
-		gpin = gerarpin() #informar o pin do próximo funcionário
+			return redirect(url_for('qrcode_func'), code=307) #redirecionando com o POST
+			
+		else:
+			gpin = gerarpin() #informar o pin do próximo funcionário
 
-		return render_template("cad_func.html", pin=gpin, matricula=mtrc)
+			return render_template("cad_func.html", pin=gpin, matricula=mtrc)
+
+	return render_template('index.html', error="Login não foi realizado!")
 
 @app.route('/qrcode_func', methods=['POST','GET'])
 def qrcode_func():
-	if request.method == 'POST':
-		db = BancoDeDados()
+	if 'username' in session:
+		if request.method == 'POST':
+			db = BancoDeDados()
 
-		sql = "SELECT matricula, nome FROM funcionario WHERE matricula = (SELECT max(matricula) FROM funcionario)"
+			sql = "SELECT matricula, nome FROM funcionario WHERE matricula = (SELECT max(matricula) FROM funcionario)"
 
-		conn = db.connect()
-		res = db.dmlS(conn,sql)
-		db.conclose(conn)
+			conn = db.connect()
+			res = db.dmlS(conn,sql)
+			db.conclose(conn)
 
-		if res == 1:
-			return "<h2>Não foi possível encontrar o funcionário!</h2>"
+			if res == 1:
+				return "<h2>Não foi possível encontrar o funcionário!</h2>"
 
-		mtrc = res[0][0] # matricula
-		nomeFunc = res[0][1]
+			mtrc = res[0][0] # matricula
+			nomeFunc = res[0][1]
 
-		qrcdwn(mtrc, nomeFunc) # download do qrcode
+			qrcdwn(mtrc, nomeFunc) # download do qrcode
 
-		return render_template('gnqrcode.html', nome=nomeFunc, matricula=mtrc)
+			return render_template('gnqrcode.html', nome=nomeFunc, matricula=mtrc)
 	else:
-		return redirect(url_for('index'))
+		return render_template('index.html', error="Login não foi realizado!")
 
 @app.route('/qrcode', methods=['GET', 'POST']) # leitura do qr code para bater o ponto
 def ponto():

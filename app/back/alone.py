@@ -6,6 +6,8 @@ from back.db import BancoDeDados
 import urllib.request
 import requests
 from datetime import datetime 
+import matplotlib.pyplot as plt
+import pandas
 
 def cryptmd5(password):
 	return hashlib.md5(password.encode()).hexdigest()
@@ -56,3 +58,10 @@ def apiLoc(lat, lon): # api que retorna o endereço da sua geolocalização
 	loc = end + " " + num #juntando a informação com espaço
 
 	return loc
+
+def graph(conn):
+	df = pandas.read_sql('SELECT*FROM viewgraph', conn, index_col=['hora'])
+	ax = df.plot(kind='bar', title ="Horário e tipo ponto", figsize=(3, 3), legend=True, fontsize=8)
+	ax.set_xlabel("Horário", fontsize=8)
+	ax.set_ylabel("Tipo do ponto", fontsize=8)
+	plt.savefig('static/graph.png')

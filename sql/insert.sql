@@ -1,6 +1,8 @@
 INSERT INTO acesso(nome) VALUES ('Administrador');
 INSERT INTO acesso(nome) VALUES ('Funcionario');
 
+INSERT INTO funcionario (cod_acesso, nome, usuario, senha, pin, carga_horaria) VALUES (1,'admin','admin','4badaee57fed5610012a296273158f5f',1010,0)
+
 INSERT INTO tipo(nome) VALUES ('Entrada');
 INSERT INTO tipo(nome) VALUES ('Saída Almoço');
 INSERT INTO tipo(nome) VALUES ('Volta Almoço');
