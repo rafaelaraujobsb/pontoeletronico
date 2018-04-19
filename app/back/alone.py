@@ -61,7 +61,7 @@ def apiLoc(lat, lon): # api que retorna o endereço da sua geolocalização
 
 def graph(conn):
 	df = pandas.read_sql('SELECT*FROM viewgraph', conn, index_col=['hora'])
-	ax = df.plot(kind='bar', title ="Horário e tipo ponto", figsize=(3, 3), legend=True, fontsize=8)
+	ax = df.plot(kind='bar', title ="Horário e tipo ponto", figsize=(5, 6), legend=True, fontsize=8)
 	ax.set_xlabel("Horário", fontsize=8)
 	ax.set_ylabel("Tipo do ponto", fontsize=8)
 	plt.savefig('static/graph.png')

@@ -49,7 +49,7 @@ CREATE TABLE ponto(
 	cod_tipo SMALLINT NOT NULL,
 	data DATE DEFAULT CURRENT_DATE, --data do sistema, preenchimento automatico 
 	hora TIME DEFAULT CURRENT_TIME, --hora do sistema , preenchimento automatico
-	loc VARCHAR(50) NOT NULL,
+	localizacao VARCHAR(60) NOT NULL,
 	FOREIGN KEY (matricula) --foreign key da tabela funcionario
 		REFERENCES funcionario (matricula)
 		ON UPDATE CASCADE ON DELETE CASCADE,

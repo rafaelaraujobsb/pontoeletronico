@@ -63,10 +63,8 @@ def homefunc():
 		conn = db.connect()
 		cod = db.dmlS(conn, sql, session['username'])
 
-		sql = "SELECT to_char(ponto.data, 'DD Mon YYYY'), to_char(ponto.hora, 'HH24:MI'), loc FROM ponto WHERE matricula =%s" #carregas os registros
+		sql = "SELECT to_char(ponto.data, 'DD Mon YYYY'), to_char(ponto.hora, 'HH24:MI'), localizacao FROM ponto WHERE matricula =%s" #carregas os registros
 		res = db.dmlS(conn, sql, [cod[0][0]])
-
-		print(res)
 
 		db.conclose(conn)
 		if res == []:
@@ -281,7 +279,7 @@ def reg_ponto():
 
 	db = BancoDeDados()
 
-	sql = "INSERT INTO ponto(loc, matricula, cod_tipo) VALUES (%s, %s, %s)"
+	sql = "INSERT INTO ponto(localizacao, matricula, cod_tipo) VALUES (%s, %s, %s)"
 
 	v = [edc, int(mtrc), int(tipo)]
 
